@@ -9,14 +9,14 @@ export const useCart = () => {
     useEffect( () => {
         const fetchData = async () => {
             try {
-                const response = await api.get('/cart', { userId });
-                setCart(response.data);
+                const { data } = await api.get('/cart', { userId });
+                setCart(data[0].products);
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
         };
         fetchData();
-    }, []);
+    }, [userId]);
 
     const addToCart = async (product, quantity) => {
         const productIndex = cart.findIndex(item => item._id === product._id);
@@ -27,22 +27,40 @@ export const useCart = () => {
                 index === productIndex ? { ...item, quantity: item.quantity + quantity } : item
             );
             setCart(updatedCart);
-            const response = await api.post('/cart', { userId, updatedCart });
-            console.log(response);
+            await api.post('/cart', { userId, cartItems: updatedCart });
         } else {
             // Product not in cart, add it
             const updatedCart = [...cart, { ...product, quantity }];
             setCart(updatedCart);
-            const response = await api.post('/cart', { userId, updatedCart });
+            await api.post('/cart', { userId, cartItems: updatedCart });
         }
     };
 
-    const removeFromCart = (productId) => {
-        console.log(productId);
-        const updatedCart = cart.filter(item => item._id !== productId);
-        console.log(updatedCart);
-        setCart(updatedCart);
-        localStorage.setItem('cart', JSON.stringify(updatedCart));
+    const removeFromCart = async (productId, quantity) => {
+        const productIndex = cart.findIndex(item => item._id === productId);
+        if (productIndex !== -1) {
+            // Product already in cart, update quantity
+            const updatedCart = cart.map(function(item, index) {
+                if(index === productIndex && item.quantity > 0){
+                    item.quantity = item.quantity - quantity;    
+                    return item;
+                } else {
+                    return item;
+                }
+            }).filter(item => item.quantity > 0);
+            setCart(updatedCart); 
+            await api.post('/cart', { userId, cartItems: updatedCart });
+        }
+    };
+
+    const placeCart = async () => {
+        try {
+            const response = await api.post('/order', { userId , items: cart});
+            console.log('Order placed:', response.data);
+            setCart([]);
+        } catch (error) {
+            console.error('Error placing order:', error.response.data);
+        }
     };
 
     const clearCart = () => {
@@ -50,5 +68,5 @@ export const useCart = () => {
         localStorage.removeItem('cart');
     };
 
-    return { cart, addToCart, removeFromCart, clearCart };
+    return { cart, addToCart, removeFromCart, clearCart , placeCart};
 };

@@ -1,23 +1,30 @@
-const Cart = require('../models/Cart');
+const Cart = require('../models/cart');
+const Product = require('../models/product');
 
 exports.addToCart = async (req, res) => {
     try {
-        const { userId, productId, quantity } = req.body;
-        let cart = await Cart.findOne({ user: userId });
-        if (!cart) {
-            cart = new Cart({ user: userId, items: [] });
+        const { userId, cartItems } = req.body;
+    
+        for (const element of cartItems) {
+            const product = await Product.findById(element._id);
+            if (product.inventory < element.quantity) {
+                return res.status(400).send(`Not enough quantity of ${element.name} in the stock`);
+            }
         }
-        const itemIndex = cart.items.findIndex(item => item.product.toString() === productId);
-        if (itemIndex > -1) {
-            cart.items[itemIndex].quantity += quantity;
-        } else {
-            cart.items.push({ product: productId, quantity });
-        }
+    
+        let cart = await Cart.findOneAndUpdate(
+            { user: userId },
+            { products: cartItems },
+            { new: true, upsert: true }
+        );
+    
         await cart.save();
-        res.status(201).send(cart);
+        res.status(200).send(cart);
     } catch (error) {
+        console.log(error);
         res.status(500).send(error);
     }
+    
 };
 
 

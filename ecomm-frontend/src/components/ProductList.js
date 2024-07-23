@@ -26,20 +26,20 @@ const ProductList = () => {
 
         fetchProducts();
     }, [id]);
+    
 
     return (
-        <div>
-            <h2>Products</h2>
-            <ul>
-                {products.map(product => (
-                    <li key={product._id}>
-                        <h3>{product.name}</h3>
-                        <p>{product.description}</p>
-                        <p>INR {product.price}</p>
-                        <button onClick={() => addToCart(product, 1)}>Add to Cart</button>
-                    </li>
-                ))}
-            </ul>
+        <div className='product__wrapper'>
+            {products.map(product => (
+                <div className="card" key={product._id}>
+                    <img className="card-img-top" src={product.imageURL} alt="product"/>
+                    <div className="card-body">
+                        <h5 className="card-title">{product.name}</h5>
+                        <p className="card-text">{product.description}</p>
+                        <button className="btn btn-primary" onClick={() => addToCart(product, 1)}>Add to Cart</button>
+                    </div>
+                </div>
+            ))}
         </div>
     );
 };

@@ -4,15 +4,17 @@ import { Link } from 'react-router-dom';
 
 const CategoryList = ({ categories }) => {
     return (
-        <div>
-            <h2>Categories</h2>
-            <ul>
-                {categories.map(category => (
-                    <li key={category._id}>
-                        <Link to={`/products/${category._id}`}>{category.name}</Link>
-                    </li>
-                ))}
-            </ul>
+        <div className='category__wrapper'>
+            {categories.map(category => (
+                    <div className="card" key={category._id}>
+                        <img className="card-img-top" src={category.image} alt="Card" />
+                        <div className="card-body">
+                            <h4 className="card-title">{category.name}</h4>
+                            <p className="card-text">{category.description}</p>
+                            <Link to={`/products/${category._id}`} className="btn btn-primary">See products</Link>
+                        </div>
+                    </div>
+            ))}
         </div>
     );
 };

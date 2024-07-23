@@ -18,9 +18,11 @@ export const useAuth = () => {
 
     const register = async (name, username, email, password) => {
         try {
-            await api.post('/auth/register', { name, username, email, password });
+            const res = await api.post('/auth/register', { name, username, email, password });
+            return res;
         } catch (error) {
             console.error('Registration error:', error);
+            return error;
         }
     };
 
